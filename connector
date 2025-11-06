@@ -1,0 +1,50 @@
+import mysql.connector
+
+def connect_db():
+    return mysql.connector.connect(
+        host='localhost',
+        user='your_username',
+        password='your_password',
+        database='LibraryDB'
+    )
+
+def add_book(conn, book_id, title, authors, edition, no_of_c):
+    cursor = conn.cursor()
+    sql = "INSERT INTO library (B_id, Title, Authors, Edition, no_of_c) VALUES (%s, %s, %s, %s, %s)"
+    cursor.execute(sql, (book_id, title, authors, edition, no_of_c))
+    conn.commit()
+    cursor.close()
+
+def delete_book(conn, book_id):
+    cursor = conn.cursor()
+    sql = "DELETE FROM library WHERE B_id = %s"
+    cursor.execute(sql, (book_id,))
+    conn.commit()
+    cursor.close()
+
+def edit_book(conn, book_id, new_edition):
+    cursor = conn.cursor()
+    sql = "UPDATE library SET Edition = %s WHERE B_id = %s"
+    cursor.execute(sql, (new_edition, book_id))
+    conn.commit()
+    cursor.close()
+
+def view_books(conn):
+    cursor = conn.cursor()
+    sql = "SELECT * FROM library"
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    cursor.close()
+    return rows
+
+# Example usage
+conn = connect_db()
+
+add_book(conn, 104, 'New Book', 'Author Name', 1, 4)
+edit_book(conn, 104, 2)
+books = view_books(conn)
+for book in books:
+    print(book)
+delete_book(conn, 104)
+
+conn.close()
