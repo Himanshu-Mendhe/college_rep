@@ -1,0 +1,154 @@
+DROP DATABASE IF EXISTS medical_db;
+CREATE DATABASE medical_db;
+USE medical_db;
+
+CREATE TABLE Patient (
+    pat_id VARCHAR(10) PRIMARY KEY,
+    pat_name VARCHAR(100),
+    date_adm DATE,
+    age INT,
+    city VARCHAR(50)
+);
+
+CREATE TABLE Doctor (
+    doc_id VARCHAR(10) PRIMARY KEY,
+    doc_name VARCHAR(100),
+    qualification VARCHAR(50),
+    exp INT,
+    dept VARCHAR(50),
+    city VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE Treats (
+    doc_id VARCHAR(10),
+    pat_id VARCHAR(10),
+    disease VARCHAR(100),
+    PRIMARY KEY (doc_id, pat_id, disease),
+    FOREIGN KEY (doc_id) REFERENCES Doctor(doc_id) ON DELETE CASCADE,
+    FOREIGN KEY (pat_id) REFERENCES Patient(pat_id) ON DELETE SET NULL
+);
+
+INSERT INTO Patient (pat_id, pat_name, date_adm, age, city) VALUES
+('p1', 'John Doe', '2024-01-10', 45, 'New York'),
+('p2', 'Jane Smith', '2024-02-15', 32, 'Pune'),
+('p3', 'Robert Brown', '2024-03-05', 68, 'Mumbai'),
+('p4', 'Alina', '2024-04-20', 25, 'Pune'),
+('p5', 'Mike Davis', '2024-05-01', 50, 'New York'),
+('p10', 'Chris Lee', '2024-05-10', 22, 'Delhi');
+
+INSERT INTO Doctor (doc_id, doc_name, qualification, exp, dept, city, salary) VALUES
+('d1', 'Dr. Alice', 'MD', 22, 'Cardiology', 'New York', 250000),
+('d2', 'Dr. Bob', 'MBBS', 10, 'General', 'Pune', 80000),
+('d3', 'Dr. Shubham', 'MBBS', 5, 'Dentist', 'Pune', 60000),
+('d4', 'Dr. Suhas', 'MD', 25, 'Oncology', 'Mumbai', 300000),
+('d5', 'Dr. Emma', 'BDS', 8, 'Dentist', 'New York', 75000),
+('d6', 'Dr. Patel', 'MD', 15, 'Cardiology', 'Mumbai', 220000),
+('d7', 'Dr. Frank', 'MS', 12, 'Neurology', 'Delhi', 180000);
+
+INSERT INTO Treats (doc_id, pat_id, disease) VALUES
+('d1', 'p1', 'Hypertension'),
+('d4', 'p3', 'Cancer'),
+('d2', 'p2', 'Fever'),
+('d3', 'p4', 'Cavity'),
+('d1', 'p5', 'Arrhythmia'),
+('d4', 'p1', 'Cancer');
+
+SELECT pat_name, age 
+FROM Patient 
+WHERE age BETWEEN 18 AND 50;
+
+SELECT doc_name, qualification 
+FROM Doctor 
+WHERE qualification = 'MD';
+
+SELECT doc_name, exp 
+FROM Doctor 
+WHERE exp > 20;
+
+SELECT p.pat_name, t.disease
+FROM Patient p
+JOIN Treats t ON p.pat_id = t.pat_id
+WHERE t.disease = 'Cancer';
+
+SELECT p.pat_name, d.doc_name, t.disease
+FROM Patient p
+JOIN Treats t ON p.pat_id = t.pat_id
+JOIN Doctor d ON t.doc_id = d.doc_id
+WHERE t.disease = 'Cancer';
+
+SELECT pat_name 
+FROM Patient 
+WHERE pat_name LIKE 'A___a';
+
+DELETE FROM Patient 
+WHERE pat_id = 'p10';
+
+DELETE FROM Doctor 
+WHERE doc_name = 'Dr. Suhas';
+
+UPDATE Doctor 
+SET qualification = 'MD' 
+WHERE doc_name = 'Dr. Shubham';
+
+UPDATE Doctor 
+SET salary = CASE 
+    WHEN dept = 'Dentist' THEN salary * 1.05
+    WHEN dept = 'Cardiology' THEN salary * 1.10
+    ELSE salary 
+END
+WHERE dept IN ('Dentist', 'Cardiology');
+
+SELECT dept, SUM(salary) AS total_salary
+FROM Doctor
+GROUP BY dept;
+
+SELECT dept, AVG(salary) AS avg_salary
+FROM Doctor
+GROUP BY dept
+ORDER BY avg_salary DESC
+LIMIT 1;
+
+SELECT AVG(salary) AS avg_dentist_salary
+FROM Doctor
+WHERE dept = 'Dentist';
+
+SELECT dept, AVG(salary) AS avg_salary
+FROM Doctor
+GROUP BY dept
+HAVING avg_salary > 50000;
+
+SELECT COUNT(*) AS total_doctors
+FROM Doctor;
+
+SELECT COUNT(DISTINCT doc_id) AS treating_doctors
+FROM Treats;
+
+SELECT city FROM Doctor
+UNION
+SELECT city FROM Patient;
+
+SELECT DISTINCT d.city
+FROM Doctor d
+JOIN Patient p ON d.city = p.city;
+
+SELECT d.doc_name, p.pat_name, d.city
+FROM Doctor d
+JOIN Patient p ON d.city = p.city;
+
+SELECT d.doc_name
+FROM Doctor d
+LEFT JOIN Treats t ON d.doc_id = t.doc_id
+WHERE t.doc_id IS NULL;
+
+SELECT doc_name AS name FROM Doctor
+UNION
+SELECT pat_name AS name FROM Patient;
+
+SELECT doc_name AS name FROM Doctor
+UNION ALL
+SELECT pat_name AS name FROM Patient;
+
+SELECT dept, AVG(salary) AS average_salary
+FROM Doctor
+GROUP BY dept;
