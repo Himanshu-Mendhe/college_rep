@@ -1,0 +1,132 @@
+ROP DATABASE IF EXISTS University_DB;
+CREATE DATABASE University_DB;
+SHOW DATABASES;
+USE University_DB;
+
+CREATE TABLE Department (
+    dept_no INT,
+    dept_name VARCHAR(100) UNIQUE, -- Unique constraint on name
+    building_name VARCHAR(100)
+);
+
+CREATE TABLE Instructor (
+    ins_id INT PRIMARY KEY,
+    ins_name VARCHAR(100) NOT NULL, -- NOT NULL constraint on name
+    dept_no INT,
+    salary DECIMAL(10, 2),
+    mob_no VARCHAR(15)
+);
+
+CREATE TABLE Course (
+    course_id INT PRIMARY KEY,
+    title VARCHAR(100),
+    dept_no INT,
+    credits INT
+);
+
+CREATE TABLE Teaches (
+    ins_id INT,
+    course_id INT,
+    semester VARCHAR(20),
+    year INT,
+    PRIMARY KEY (ins_id, course_id, semester, year),
+    FOREIGN KEY (ins_id) REFERENCES Instructor(ins_id),
+    FOREIGN KEY (course_id) REFERENCES Course(course_id)
+);
+
+SHOW TABLES;
+
+ALTER TABLE Department
+ADD PRIMARY KEY (dept_no);
+
+ALTER TABLE Instructor
+ADD CONSTRAINT fk_ins_dept FOREIGN KEY (dept_no) REFERENCES Department(dept_no);
+
+ALTER TABLE Course
+ADD CONSTRAINT fk_crs_dept FOREIGN KEY (dept_no) REFERENCES Department(dept_no);
+
+INSERT INTO Department VALUES (1, 'Computer Science', 'Main Building');
+INSERT INTO Department VALUES (2, 'Physics', 'Watson Hall');
+INSERT INTO Department VALUES (3, 'History', 'Archive Wing');
+
+INSERT INTO Instructor VALUES (101, 'Dr. Alice', 1, 90000.00, '1112223333');
+INSERT INTO Instructor VALUES (102, 'Dr. Bob', 2, 85000.00, '4445556666');
+INSERT INTO Instructor VALUES (103, 'Dr. Carol', 1, 92000.00, '7778889999');
+INSERT INTO Instructor VALUES (104, 'Dr. David', 3, 80000.00, '1234567890');
+
+INSERT INTO Course VALUES (10, 'Intro to CS', 1, 4);
+INSERT INTO Course VALUES (20, 'Quantum Physics', 2, 4);
+INSERT INTO Course VALUES (30, 'Databases', 1, 3);
+INSERT INTO Course VALUES (40, 'World History', 3, 3);
+
+INSERT INTO Teaches VALUES (101, 10, 'Fall', 2024);
+INSERT INTO Teaches VALUES (101, 30, 'Spring', 2025);
+INSERT INTO Teaches VALUES (102, 20, 'Fall', 2024);
+INSERT INTO Teaches VALUES (104, 40, 'Fall', 2024);
+
+ALTER TABLE Department
+ADD COLUMN budget DECIMAL(12, 2);
+
+CREATE UNIQUE INDEX idx_mob_no ON Instructor(mob_no);
+
+CREATE VIEW Instructor_View AS
+SELECT ins_id, ins_name, dept_no, mob_no
+FROM Instructor;
+
+INSERT INTO Instructor_View (ins_id, ins_name, dept_no, mob_no)
+VALUES (105, 'Dr. Eve', 2, '9876543210');
+
+SELECT * FROM Instructor WHERE ins_id = 105;
+
+UPDATE Instructor_View
+SET dept_no = 3
+WHERE ins_name = 'Dr. Eve';
+
+SELECT * FROM Instructor WHERE ins_name = 'Dr. Eve';
+
+DELETE FROM Instructor_View
+WHERE ins_id = 105;
+
+SELECT * FROM Instructor;
+
+DROP VIEW Instructor_View;
+
+ALTER TABLE Department
+DROP COLUMN budget;
+
+ALTER TABLE Course
+MODIFY COLUMN title VARCHAR(200);
+
+DROP INDEX idx_mob_no ON Instructor;
+
+RENAME TABLE Course TO Course_Details;
+
+CREATE VIEW Instructor_Courses AS
+SELECT i.ins_name, cd.title
+FROM Instructor i
+JOIN Teaches t ON i.ins_id = t.ins_id
+JOIN Course_Details cd ON t.course_id = cd.course_id;
+
+SELECT * FROM Instructor_Courses;
+
+ALTER TABLE Instructor DROP FOREIGN KEY fk_ins_dept;
+ALTER TABLE Course_Details DROP FOREIGN KEY fk_crs_dept;
+
+ALTER TABLE Department DROP PRIMARY KEY;
+
+ALTER TABLE Course_Details
+MODIFY COLUMN course_id INT AUTO_INCREMENT;
+
+ALTER TABLE Course_Details AUTO_INCREMENT = 51;
+
+INSERT INTO Course_Details (title, dept_no, credits) VALUES ('New Course', 1, 3);
+SELECT * FROM Course_Details WHERE title = 'New Course';
+
+SHOW TABLES;
+
+TRUNCATE TABLE Teaches;
+
+SELECT * FROM Teaches;
+DROP TABLE Teaches;
+
+SHOW TABLES;
